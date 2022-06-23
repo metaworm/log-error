@@ -1,0 +1,15 @@
+[package]
+name = "log-error"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+documentation = "https://docs.rs/log-error"
+include = ["/src", "README.md"]
+keywords = ['error', 'logging', 'error-handle']
+description = "A small crate to log the error result easily"
+
+[dependencies]
+log = "0.4"
+
+[dev-dependencies]
+simple_logger = '2'
