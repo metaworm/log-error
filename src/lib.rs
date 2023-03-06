@@ -10,18 +10,21 @@ pub trait LogError<T, E>: Sized {
 
     /// log a error message with specific format handler
     #[inline(always)]
+    #[track_caller]
     fn log_error_with<F: FnOnce(E) -> String>(self, cb: F) -> Option<T> {
         self.log_level_with(Level::Error, cb)
     }
 
     /// log a warn message with specific format handler
     #[inline(always)]
+    #[track_caller]
     fn log_warn_with<F: FnOnce(E) -> String>(self, cb: F) -> Option<T> {
         self.log_level_with(Level::Warn, cb)
     }
 
     /// log the error with specific prefix
     #[inline(always)]
+    #[track_caller]
     fn log_error(self, msg: &str) -> Option<T>
     where
         E: Display,
@@ -31,6 +34,7 @@ pub trait LogError<T, E>: Sized {
 
     /// log the error with specific prefix in a detailed format
     #[inline(always)]
+    #[track_caller]
     fn log_error_detail(self, msg: &str) -> Option<T>
     where
         E: Debug,
@@ -40,6 +44,7 @@ pub trait LogError<T, E>: Sized {
 
     /// log the error with specific prefix as a warn message
     #[inline(always)]
+    #[track_caller]
     fn log_warn(self, msg: &str) -> Option<T>
     where
         E: Display,
@@ -49,6 +54,7 @@ pub trait LogError<T, E>: Sized {
 
     /// log the error with specific prefix in a detailed format as a warn message
     #[inline(always)]
+    #[track_caller]
     fn log_warn_detail(self, msg: &str) -> Option<T>
     where
         E: Debug,
@@ -60,6 +66,7 @@ pub trait LogError<T, E>: Sized {
 /// Implements [`LogError`] for [`Result`]
 impl<T, E> LogError<T, E> for Result<T, E> {
     #[inline(always)]
+    #[track_caller]
     fn log_level_with<F: FnOnce(E) -> String>(self, level: Level, cb: F) -> Option<T> {
         match self {
             Ok(res) => Some(res),
@@ -74,6 +81,7 @@ impl<T, E> LogError<T, E> for Result<T, E> {
 /// Implements [`LogError`] for [`Option`]
 impl<T> LogError<T, &'static str> for Option<T> {
     #[inline(always)]
+    #[track_caller]
     fn log_level_with<F: FnOnce(&'static str) -> String>(self, level: Level, cb: F) -> Option<T> {
         match self {
             Some(res) => Some(res),
@@ -85,13 +93,22 @@ impl<T> LogError<T, &'static str> for Option<T> {
     }
 }
 
+#[track_caller]
 fn log_message(level: Level, msg: String) {
-    // TODO: use backtrace to get line number
+    let loc = std::panic::Location::caller();
+    let file = loc.file();
+    let module = &file[file
+        .rfind(|c| c == '/' || c == '\\')
+        .map(|x| 1 + x)
+        .unwrap_or(0)..];
+
     logger().log(
         &log::Record::builder()
             .args(format_args!("{msg}"))
+            .file(Some(file))
+            .line(Some(loc.line()))
             .level(level)
-            .module_path_static("log-error".into())
+            .module_path(Some(module))
             .build(),
     );
 }

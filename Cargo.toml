@@ -1,6 +1,6 @@
 [package]
 name = "log-error"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 license = "MIT"
 documentation = "https://docs.rs/log-error"
@@ -12,4 +12,4 @@ description = "A small crate to log the error result easily"
 log = "0.4"
 
 [dev-dependencies]
-simple_logger = '2'
+simple_logger = '4'
