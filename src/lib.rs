@@ -1,7 +1,13 @@
 #![doc = include_str!("../README.md")]
+#![no_std]
+
+extern crate alloc;
 
 use core::fmt::{Debug, Display};
 use log::{logger, Level};
+
+use alloc::format;
+use alloc::string::String;
 
 /// Trait to log the error result, there are impls for [`Result`] and [`Option`] by default.
 pub trait LogError<T, E>: Sized {
@@ -95,7 +101,7 @@ impl<T> LogError<T, &'static str> for Option<T> {
 
 #[track_caller]
 fn log_message(level: Level, msg: String) {
-    let loc = std::panic::Location::caller();
+    let loc = core::panic::Location::caller();
     let file = loc.file();
     let module = &file[file
         .rfind(|c| c == '/' || c == '\\')
